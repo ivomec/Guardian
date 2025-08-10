@@ -1,26 +1,197 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // --- DOM 요소 가져오기 ---
-    const petNameInput = document.getElementById('petName');
-    const visitDateInput = document.getElementById('visitDate'); // 날짜 입력 필드
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    const saveBtn = document.getElementById('saveBtn');
-    const saveOptionsContainer = document.getElementById('save-options');
+document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 이름 및 조사 관련 요소 ---
-    const namePlaceholders = document.querySelectorAll('.patient-name-placeholder');
-    const gabapentinTitle = document.getElementById('gabapentinTitle');
-    const particlesEulReul = document.querySelectorAll('.particle-eul, .particle-reul');
-    const particlesIGa = document.querySelectorAll('.particle-i, .particle-ga');
+    // --- 기본 설정 ---
+    const petNameInput = document.getElementById('petNameInput');
+    const dateDisplay = document.getElementById('dateDisplay');
+    const tabNav = document.getElementById('tabNav');
+    const tabContent = document.getElementById('tabContent');
+    const saveOptionsContainer = document.getElementById('saveOptionsContainer');
+    const saveSelectedBtn = document.getElementById('saveSelectedBtn');
+
+    // 불러올 탭 목록과 각 탭에서 이미자로 저장할 특정 영역 지정
+    const TABS_CONFIG = [
+        { id: 'gabapentin', title: '가바펜틴 안내문', file: '가바펜틴 진정 약물 안내문.html', captureSelector: '#captureArea' },
+        { id: 'dog-dental', title: '강아지 양치', file: '강아지 양치.html', captureSelector: '.container' },
+        { id: 'cat-dental', title: '고양이 양치', file: '고양이 양치.html', captureSelector: '.container' },
+        { id: 'alveolar-bone', title: '치조골 팽윤', file: '고양이 치조골 팽윤.html', captureSelector: '#explainerContent' }
+    ];
+
+    // --- 초기화 함수 실행 ---
+    initializeDashboard();
+    
+    // --- 기능별 함수 정의 ---
 
     /**
-     * 한글 이름의 마지막 글자에 받침(종성)이 있는지 확인하는 함수
-     * @param {string} name - 확인할 이름 문자열
-     * @returns {boolean} - 받침이 있으면 true, 없으면 false
+     * 대시보드 전체를 초기화하는 함수
      */
-    function hasFinalConsonant(name) {
-        if (!name || typeof name !== 'string') return false;
-        const lastChar = name.charCodeAt(name.length - 1);
+    async function initializeDashboard() {
+        displayCurrentDate();
+        await loadTabs();
+        setupEventListeners();
+    }
+
+    /**
+     * 현재 날짜를 상단에 표시하는 함수
+     */
+    function displayCurrentDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const date = now.getDate();
+        const day = ['일', '월', '화', '수', '목', '금', '토'][now.getDay()];
+        dateDisplay.textContent = `${year}년 ${month}월 ${date}일 (${day}요일)`;
+    }
+    
+    /**
+     * TABS_CONFIG에 정의된 모든 탭의 콘텐츠를 비동기 로드
+     */
+    async function loadTabs() {
+        showLoader(true);
+        const fetchPromises = TABS_CONFIG.map(async (tab, index) => {
+            // 1. 탭 버튼 생성
+            const button = document.createElement('button');
+            button.className = `tab-btn p-4 font-bold border-b-2 border-transparent text-slate-500 hover:bg-slate-200 ${index === 0 ? 'active' : ''}`;
+            button.textContent = tab.title;
+            button.dataset.tabId = tab.id;
+            tabNav.appendChild(button);
+
+            // 2. 탭 콘텐츠를 담을 패널 생성
+            const panel = document.createElement('div');
+            panel.id = `content-${tab.id}`;
+            panel.className = `tab-panel ${index === 0 ? 'active' : ''}`;
+            tabContent.appendChild(panel);
+
+            // 3. HTML 파일 fetch 및 패널에 내용 삽입
+            try {
+                const response = await fetch(tab.file);
+                if (!response.ok) throw new Error(`'${tab.file}' 로드 실패`);
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // body의 자식 요소들만 패널에 추가 (중복 body, head 태그 방지)
+                panel.append(...doc.body.children);
+                executePanelScripts(panel); // 로드된 HTML 내의 스크립트 실행
+            } catch (error) {
+                panel.innerHTML = `<p class="text-red-500 text-center p-8">${error.message}</p>`;
+            }
+             // 4. 저장 옵션 체크박스 생성
+            const checkboxDiv = document.createElement('div');
+            checkboxDiv.className = 'flex items-center bg-gray-50 p-2 rounded-md border';
+            checkboxDiv.innerHTML = `
+                <input type="checkbox" id="save-check-${tab.id}" data-tab-id="${tab.id}" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                <label for="save-check-${tab.id}" class="ml-2 block text-sm font-medium text-gray-700 truncate">${tab.title}</label>
+            `;
+            saveOptionsContainer.appendChild(checkboxDiv);
+        });
+
+        await Promise.all(fetchPromises);
+        showLoader(false);
+        updateAllPatientNames(); // 초기 이름 업데이트
+    }
+
+    /**
+     * 로드된 패널 내부의 스크립트를 찾아 실행하는 함수
+     * @param {HTMLElement} panel 
+     */
+    function executePanelScripts(panel) {
+        panel.querySelectorAll('script').forEach(oldScript => {
+            const newScript = document.createElement('script');
+            // 스크립트 속성을 복사합니다. (src, type 등)
+            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+            // 인라인 스크립트의 경우 내용을 복사합니다.
+            if(oldScript.innerHTML) {
+                newScript.innerHTML = oldScript.innerHTML;
+            }
+            // 스크립트를 DOM에 다시 추가하여 실행시킵니다.
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+    }
+
+    /**
+     * 모든 이벤트 리스너를 설정하는 함수
+     */
+    function setupEventListeners() {
+        // 탭 전환 이벤트
+        tabNav.addEventListener('click', (e) => {
+            if (e.target.matches('.tab-btn')) {
+                const tabId = e.target.dataset.tabId;
+                switchTab(tabId);
+            }
+        });
+
+        // 환자 이름 입력 시 실시간 연동
+        petNameInput.addEventListener('input', updateAllPatientNames);
+        
+        // 선택한 안내문 저장 이벤트
+        saveSelectedBtn.addEventListener('click', saveSelectedImages);
+    }
+    
+    /**
+     * 지정된 ID의 탭으로 화면을 전환하는 함수
+     * @param {string} tabId 
+     */
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+        document.querySelector(`.tab-btn[data-tab-id="${tabId}"]`).classList.add('active');
+        document.getElementById(`content-${tabId}`).classList.add('active');
+    }
+
+    /**
+     * 모든 탭의 환자 이름 플레이스홀더를 업데이트하는 함수
+     */
+    function updateAllPatientNames() {
+        const name = petNameInput.value.trim();
+        const hasJongseong = name ? hasFinalConsonant(name) : false;
+        
+        // 가바펜틴 안내문 제목 (고유 ID 사용)
+        const gabaTitle = document.getElementById('mainTitle');
+        if (gabaTitle) {
+            if (name) {
+                gabaTitle.innerHTML = `<span>${name}</span><span>${hasJongseong ? '이를' : '를'}</span> 위한 편안한 진료 준비 안내서`;
+            } else {
+                gabaTitle.innerHTML = `<span>우리 아이</span><span>를</span> 위한 편안한 진료 준비 안내서`;
+            }
+        }
+
+        // 치조골 팽윤 안내문 (클래스 사용)
+        const bonePlaceholders = document.querySelectorAll('.patient-name-placeholder');
+        bonePlaceholders.forEach(el => {
+            if (name) {
+                // 특정 구문에 따라 조사 변경
+                if (el.nextElementSibling && (el.nextElementSibling.textContent.startsWith('을') || el.nextElementSibling.textContent.startsWith('를'))) {
+                    el.textContent = name;
+                    el.nextElementSibling.textContent = hasJongseong ? '이를 고통에서...' : '를 고통에서...';
+                } else if (el.textContent.includes('의')) {
+                    el.textContent = `${name}의`;
+                }
+                 else {
+                    el.textContent = name;
+                }
+            } else {
+                 el.textContent = '[환자이름]';
+            }
+        });
+        
+        // 치조골 팽윤의 복잡한 문장 구조를 위한 별도 처리
+        document.querySelectorAll('p, strong').forEach(p => {
+            if (p.innerHTML.includes('가 더 이상 아프지 않고')) {
+                const particle = hasJongseong ? '이가' : '가';
+                p.innerHTML = p.innerHTML.replace(/\[환자이름\](이|가) 더 이상 아프지 않고/g, `<span class="patient-name-placeholder">${name || '[환자이름]'}</span>${name ? particle : '가'} 더 이상 아프지 않고`);
+            }
+        });
+    }
+    
+    /**
+     * 한글 마지막 글자의 받침 유무를 확인하는 함수
+     * @param {string} str 
+     * @returns {boolean}
+     */
+    function hasFinalConsonant(str) {
+        const lastChar = str.charCodeAt(str.length - 1);
+        // 한글 범위(가-힣) 내에서만 계산
         if (lastChar >= 0xAC00 && lastChar <= 0xD7A3) {
             return (lastChar - 0xAC00) % 28 !== 0;
         }
@@ -28,141 +199,87 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * 입력된 환자 이름에 맞춰 모든 안내문의 이름과 조사를 업데이트하는 함수
+     * 선택된 탭들을 고품질 이미지로 저장하는 함수
      */
-    function updateAllPlaceholders() {
-        const name = petNameInput.value.trim();
-        const hasConsonant = hasFinalConsonant(name);
-
-        if (name) {
-            namePlaceholders.forEach(el => el.textContent = name);
-            gabapentinTitle.innerHTML = `<span>${name}</span><span class="particle-eul">${hasConsonant ? '이를' : '를'}</span> 위한 편안한 진료 준비 안내서`;
-            particlesEulReul.forEach(el => el.textContent = hasConsonant ? '을' : '를');
-            particlesIGa.forEach(el => el.textContent = hasConsonant ? '이' : '가');
-        } else {
-            document.querySelectorAll('#alveolar-bone .patient-name-placeholder, #cat-dental .patient-name-placeholder, #dog-dental .patient-name-placeholder').forEach(el => {
-                const defaultText = {
-                    '[환자이름]': '[환자이름]',
-                    '우리 아이': '우리 아이',
-                    '마음': '마음'
-                }[el.dataset.default] || '우리 아이'; // data-default 속성을 기반으로 기본값 설정
-                if(el.closest('#alveolar-bone')) el.textContent = '[환자이름]';
-                else if(el.closest('#dog-dental')) el.textContent = '우리 아이';
-                else if(el.closest('#cat-dental')) el.textContent = '마음';
-                else el.textContent = '우리 아이';
-            });
-            gabapentinTitle.innerHTML = `<span>우리 아이</span><span class="particle-eul">를</span> 위한 편안한 진료 준비 안내서`;
-            particlesEulReul.forEach(el => el.textContent = '를');
-            particlesIGa.forEach(el => el.textContent = '가');
+    async function saveSelectedImages() {
+        const selectedCheckboxes = Array.from(document.querySelectorAll('#saveOptionsContainer input[type="checkbox"]:checked'));
+        if (selectedCheckboxes.length === 0) {
+            alert('저장할 안내문을 1개 이상 선택해주세요.');
+            return;
         }
-    }
 
-    /**
-     * 탭 버튼 클릭 시 해당 콘텐츠를 보여주는 함수
-     */
-    function switchTab(event) {
-        const targetId = event.currentTarget.dataset.target;
-        tabButtons.forEach(button => button.classList.toggle('active', button.dataset.target === targetId));
-        tabContents.forEach(content => content.classList.toggle('active', content.id === targetId));
-    }
-
-    /**
-     * 날짜 입력 필드의 값이 바뀔 때, CSS 클래스를 조절하여 플레이스홀더 스타일을 관리하는 함수
-     */
-    function handleDateInputStyle() {
-        if (visitDateInput.value) {
-            visitDateInput.classList.add('has-value');
-        } else {
-            visitDateInput.classList.remove('has-value');
-        }
-    }
-
-    /**
-     * 선택된 탭들을 고해상도 이미지로 저장하는 함수 (파일명에 날짜 추가)
-     */
-    async function saveSelectedAsImages() {
-        // 1. 환자 이름과 날짜 가져오기
         const petName = petNameInput.value.trim() || '환자';
-        const visitDateValue = visitDateInput.value;
+        const originalButtonText = saveSelectedBtn.querySelector('span').textContent;
+        setButtonLoadingState(true);
 
-        if (!visitDateValue) {
-            alert("방문 날짜를 선택해주세요. 파일 이름에 날짜가 포함됩니다.");
-            visitDateInput.focus();
-            return;
-        }
-        
-        // 날짜 포맷 변경: 'YYYY-MM-DD' -> 'YYMMDD'
-        const datePrefix = visitDateValue.substring(2).replace(/-/g, '');
+        for (const checkbox of selectedCheckboxes) {
+            const tabId = checkbox.dataset.tabId;
+            const config = TABS_CONFIG.find(t => t.id === tabId);
+            if (!config) continue;
 
-        // 2. 저장할 안내문 선택 확인
-        const checkedOptions = saveOptionsContainer.querySelectorAll('input[type="checkbox"]:checked');
-        if (checkedOptions.length === 0) {
-            alert("저장할 안내문을 1개 이상 선택해주세요.");
-            return;
-        }
+            const contentPanel = document.getElementById(`content-${tabId}`);
+            const captureElement = contentPanel.querySelector(config.captureSelector);
 
-        const fileNameMap = {
-            'gabapentin': '가바펜틴_안내문',
-            'dog-dental': '강아지_양치_가이드',
-            'cat-dental': '고양이_양치_가이드',
-            'alveolar-bone': '치조골_팽윤_안내문'
-        };
-
-        // 3. 이미지 생성 및 저장 시작
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-3"></i> 이미지 생성 중...`;
-
-        for (const checkbox of checkedOptions) {
-            const targetId = checkbox.dataset.target;
-            const captureArea = document.getElementById(targetId);
-            if (!captureArea) continue;
-
-            try {
-                const canvas = await html2canvas(captureArea, {
-                    scale: 2.5,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    windowWidth: captureArea.scrollWidth,
-                    windowHeight: captureArea.scrollHeight,
-                });
-
-                const link = document.createElement('a');
-                const fileNameBase = fileNameMap[targetId] || targetId;
-                
-                // 파일명 형식: YYMMDD_환자이름_안내문이름.png
-                link.download = `${datePrefix}_${petName}_${fileNameBase}.png`;
-                
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            } catch (error) {
-                console.error(`'${targetId}' 안내문 저장 중 오류 발생:`, error);
-                alert(`'${targetId}' 안내문을 이미지로 저장하는 데 실패했습니다.`);
+            if (captureElement) {
+                try {
+                    const canvas = await html2canvas(captureElement, {
+                        scale: 2.5, // 품질 향상을 위해 스케일 조정
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        windowWidth: captureElement.scrollWidth,
+                        windowHeight: captureElement.scrollHeight,
+                        onclone: (clonedDoc) => {
+                            // 복제된 문서에서 이름 필드의 현재 값을 유지
+                             const clonedPetNameInput = clonedDoc.getElementById('petNameInput');
+                             if(clonedPetNameInput) {
+                               clonedPetNameInput.value = petNameInput.value;
+                             }
+                        }
+                    });
+                    const link = document.createElement('a');
+                    link.download = `${petName}_${config.title}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    await new Promise(resolve => setTimeout(resolve, 200)); // 다음 다운로드를 위한 짧은 지연
+                } catch (error) {
+                    console.error(`${config.title} 저장 중 오류 발생:`, error);
+                    alert(`${config.title} 안내문을 이미지로 저장하는 데 실패했습니다.`);
+                }
             }
         }
-        
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = `<i class="fas fa-camera-retro mr-3"></i> 선택한 안내문 모두 이미지로 저장`;
-        alert("선택한 안내문 저장이 완료되었습니다.");
+        setButtonLoadingState(false, originalButtonText);
     }
 
-    // --- 이벤트 리스너 등록 ---
-    petNameInput.addEventListener('input', updateAllPlaceholders);
-    visitDateInput.addEventListener('change', handleDateInputStyle); // 날짜 변경 시 스타일 업데이트
-    tabButtons.forEach(button => button.addEventListener('click', switchTab));
-    saveBtn.addEventListener('click', saveSelectedAsImages);
-    
-    // --- 페이지 로드 시 초기 상태 설정 ---
-    function initialize() {
-        // 오늘 날짜를 기본값으로 설정
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = (today.getMonth() + 1).toString().padStart(2, '0');
-        const day = today.getDate().toString().padStart(2, '0');
-        visitDateInput.value = `${year}-${month}-${day}`;
-        
-        handleDateInputStyle(); // 초기 날짜 스타 일 적용
-        updateAllPlaceholders(); // 초기 이름 적용
+    /**
+     * 로딩 상태 UI를 제어하는 함수
+     * @param {boolean} isLoading 
+     * @param {string} [buttonText] 
+     */
+    function setButtonLoadingState(isLoading, buttonText) {
+        const buttonSpan = saveSelectedBtn.querySelector('span');
+        if (isLoading) {
+            saveSelectedBtn.disabled = true;
+            saveSelectedBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            buttonSpan.textContent = '저장 중...';
+        } else {
+            saveSelectedBtn.disabled = false;
+            saveSelectedBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+            if (buttonText) buttonSpan.textContent = buttonText;
+        }
     }
 
-    initialize();
+    /**
+     * 탭 로딩 중 스피너 표시/숨김 함수
+     * @param {boolean} show 
+     */
+    function showLoader(show) {
+        if (show && !document.querySelector('.loader')) {
+            const loader = document.createElement('div');
+            loader.className = 'loader';
+            tabContent.appendChild(loader);
+        } else {
+            const loader = document.querySelector('.loader');
+            if (loader) loader.remove();
+        }
+    }
 });
