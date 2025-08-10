@@ -13,18 +13,30 @@
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f1f5f9;
         }
+        /* 날짜 입력 필드 플레이스홀더 스타일 */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+            filter: invert(0.5);
+        }
+        input[type="date"]:in-range::-webkit-datetime-edit-year-field,
+        input[type="date"]:in-range::-webkit-datetime-edit-month-field,
+        input[type="date"]:in-range::-webkit-datetime-edit-day-field {
+            color: transparent;
+        }
+        input[type="date"].has-value:in-range::-webkit-datetime-edit-year-field,
+        input[type="date"].has-value:in-range::-webkit-datetime-edit-month-field,
+        input[type="date"].has-value:in-range::-webkit-datetime-edit-day-field {
+            color: inherit;
+        }
         .tab-button.active {
             border-color: #4f46e5;
             background-color: #eef2ff;
             color: #4f46e5;
             font-weight: bold;
         }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         .save-button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             transition: all 0.3s ease;
@@ -38,20 +50,16 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        /* 강아지 양치 스타일 */
         .dog-dental .header { background: linear-gradient(135deg, #00C6FF, #0072FF); }
         .dog-dental .section h2 { color: #0072FF; border-bottom: 3px solid #00C6FF; }
         .dog-dental .step-list li::before { background: #0072FF; content: "Step " counter(step-counter); }
         .dog-dental .step-list h3 { color: #1971C2; }
         .dog-dental .highlight-box { background-color: #E7F5FF; border-left: 5px solid #1C7ED6; }
-        /* 고양이 양치 스타일 */
         .cat-dental .header { background: linear-gradient(135deg, #667EEA, #764BA2); }
         .cat-dental .section h2 { color: #764BA2; border-bottom: 3px solid #667EEA; }
         .cat-dental .step-list li::before { background: #764BA2; content: "Tip " counter(step-counter); }
         .cat-dental .step-list h3 { color: #5F3DC4; }
         .cat-dental .highlight-box { background-color: #F3F0FF; border-left: 5px solid #7048E8; }
-
-        /* 공통 스타일 */
         .pet-dental-container { max-width: 800px; margin: auto; background-color: #FFFFFF; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); overflow: hidden; }
         .pet-dental-container .header { color: white; padding: 40px; text-align: center; }
         .pet-dental-container .header h1 { margin: 0; font-size: 2.5em; font-weight: 900; }
@@ -73,19 +81,29 @@
 <body class="p-4 sm:p-6 md:p-8">
 
     <div class="max-w-6xl mx-auto">
-        <!-- HEADER & CONTROLS -->
+        <h1 class="text-3xl font-black text-center text-slate-800 mb-6">금호동물병원 보호자 교육 통합 대시보드</h1>
+        
+        <!-- NEW: Patient Info Section -->
         <div class="bg-white p-6 rounded-2xl shadow-lg mb-6 border border-slate-200">
-            <h1 class="text-2xl font-bold text-center text-slate-800 mb-4">금호동물병원 보호자 교육 통합 대시보드</h1>
-            
-            <!-- Patient Name Input -->
-            <div class="max-w-lg mx-auto mb-6">
-                <label for="petName" class="block text-lg font-bold text-slate-700 mb-2 flex items-center justify-center">
-                    <i class="fas fa-paw mr-2 text-indigo-500"></i>환자 이름
-                </label>
-                <input type="text" id="petName" class="w-full text-center p-3 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="아이 이름을 입력하면 안내문에 자동 적용됩니다.">
+            <h2 class="text-xl font-bold text-slate-700 mb-4 text-center">
+                <i class="fas fa-clipboard-list mr-2 text-indigo-500"></i>환자 정보
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 max-w-2xl mx-auto">
+                <div>
+                    <label for="petName" class="block text-sm font-medium text-slate-600 mb-1">환자 이름</label>
+                    <input type="text" id="petName" class="w-full p-3 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="이름을 입력하세요">
+                </div>
+                <div>
+                    <label for="visitDate" class="block text-sm font-medium text-slate-600 mb-1">방문 날짜</label>
+                    <div class="relative">
+                        <input type="date" id="visitDate" data-placeholder="날짜를 선택하세요" class="w-full p-3 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition appearance-none">
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <!-- Save Controls -->
+        <!-- Save Controls -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg mb-6 border border-slate-200">
             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <p class="text-center font-semibold text-slate-700 mb-3">저장할 안내문을 선택하세요</p>
                 <div id="save-options" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm text-center">
