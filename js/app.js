@@ -1,4 +1,4 @@
-// js/app.js
+// js/app.js (최종 완성본)
 document.addEventListener('DOMContentLoaded', () => {
     const petNameInput = document.getElementById('petName');
     const checkboxContainer = document.getElementById('template-checkboxes');
@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnText = generateBtn.querySelector('.btn-text');
     const spinner = generateBtn.querySelector('.spinner');
 
+    // -- 헬퍼 함수들 --
+
+    // 1. 대시보드 초기화 함수
     function initializeCheckboxes() {
         generateBtn.disabled = false;
         allTemplates.forEach(template => {
@@ -25,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 2. 이름 받침 확인 함수
     function hasFinalConsonant(name) {
         if (!name || typeof name !== 'string') return false;
         const lastChar = name.charCodeAt(name.length - 1);
@@ -33,6 +37,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return false;
     }
+
+    // 3. 버튼 로딩 상태 변경 함수
+    function setLoading(isLoading) {
+        generateBtn.disabled = isLoading;
+        btnText.style.display = isLoading ? 'none' : 'block';
+        spinner.style.display = isLoading ? 'block' : 'none';
+    }
+
+
+    // -- 메인 이벤트 리스너 --
 
     generateBtn.addEventListener('click', async () => {
         const petName = petNameInput.value.trim();
@@ -83,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         document.body.appendChild(iframe);
 
                         iframe.onload = () => {
-                            // [⭐핵심 수정⭐] 폰트와 아이콘이 로드될 시간을 벌기 위해 1초의 지연을 추가합니다.
+                            // 폰트와 아이콘이 로드될 시간을 벌기 위해 1초 대기
                             setTimeout(() => {
                                 const captureTarget = iframe.contentDocument.querySelector('#captureArea');
                                 if (!captureTarget) {
@@ -97,4 +111,41 @@ document.addEventListener('DOMContentLoaded', () => {
                                     useCORS: true,
                                     backgroundColor: null,
                                 }).then(canvas => {
-                                    document.body.removeChild(i
+                                    document.body.removeChild(iframe);
+                                    resolve(canvas);
+                                }).catch(err => {
+                                    document.body.removeChild(iframe);
+                                    reject(err);
+                                });
+                            }, 1000); // 1초 대기
+                        };
+                        
+                        iframe.srcdoc = htmlContent;
+                    });
+                    
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL('image/png');
+                    link.download = `${petName}_${template.id}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                } catch (error) {
+                    console.error('이미지 생성 중 오류 발생:', error);
+                    alert(`${template.title} 안내문 생성에 실패했습니다: ${error.message}`);
+                }
+
+                if (i < selectedCheckboxes.length - 1) {
+                   await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+        }
+
+        setLoading(false);
+        statusArea.textContent = '✅ 모든 이미지 다운로드가 완료되었습니다!';
+        setTimeout(() => { statusArea.textContent = ''; }, 5000);
+    });
+
+    // -- 대시보드 실행 --
+    initializeCheckboxes();
+});
