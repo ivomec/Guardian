@@ -11,100 +11,116 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 1. templates.js 데이터를 기반으로 체크박스 동적 생성
     function initializeCheckboxes() {
+        generateBtn.disabled = false; // 페이지 로드 시 버튼 활성화
+
         allTemplates.forEach(template => {
             const item = document.createElement('div');
             item.className = 'checkbox-item';
-
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.id = template.id;
             checkbox.dataset.templateId = template.id;
-
             const label = document.createElement('label');
             label.htmlFor = template.id;
             label.textContent = template.title;
-
             item.appendChild(checkbox);
             item.appendChild(label);
             checkboxContainer.appendChild(item);
         });
     }
 
-    // 2. 환자 이름 입력에 따라 버튼 활성화/비활성화
-    petNameInput.addEventListener('input', () => {
-        if (petNameInput.value.trim() !== '') {
-            generateBtn.disabled = false;
-        } else {
-            generateBtn.disabled = true;
-        }
-    });
+    // 받침 유무 확인 함수
+    function hasFinalConsonant(name) {
+        if (!name || typeof name !== 'string') return false;
+        const lastChar = name.charCodeAt(name.length - 1);
+        return (lastChar - 0xAC00) % 28 !== 0;
+    }
 
-    // 3. 생성 버튼 클릭 이벤트 (개별 이미지 다운로드 로직으로 변경)
+    // 2. 생성 버튼 클릭 이벤트 (파일 로드 및 내용 교체 방식으로 변경)
     generateBtn.addEventListener('click', async () => {
         const petName = petNameInput.value.trim();
-        const selectedCheckboxes = Array.from(checkboxContainer.querySelectorAll('input[type="checkbox"]:checked'));
+
+        if (petName === '') {
+            alert('환자 이름을 먼저 입력해주세요.');
+            petNameInput.focus();
+            return;
+        }
+
+        const selectedCheckboxes = Array.from(checkboxContainer.querySelectorAll('input:checked'));
 
         if (selectedCheckboxes.length === 0) {
             alert('하나 이상의 안내문을 선택해주세요.');
             return;
         }
 
-        // 버튼 로딩 상태로 변경
         setLoading(true);
 
-        // 선택된 각 안내문에 대해 반복 작업 수행
         for (let i = 0; i < selectedCheckboxes.length; i++) {
             const checkbox = selectedCheckboxes[i];
             const templateId = checkbox.dataset.templateId;
             const template = allTemplates.find(t => t.id === templateId);
 
             if (template) {
-                statusArea.textContent = `(${i + 1}/${selectedCheckboxes.length}) ${template.title} 이미지 생성 및 다운로드 중...`;
+                statusArea.textContent = `(${i + 1}/${selectedCheckboxes.length}) ${template.title} 생성 중...`;
+                
+                try {
+                    // Step 1: 템플릿 HTML 파일을 텍스트로 불러오기
+                    const response = await fetch(template.path);
+                    let htmlContent = await response.text();
 
-                // HTML 렌더링
-                renderArea.innerHTML = template.generateHtml(petName);
+                    // Step 2: 자리표시자를 실제 이름으로 교체하기
+                    const displayName = petName || '우리 아이';
+                    let particle = '';
+                    if (template.particle_type === '을/를') {
+                        particle = hasFinalConsonant(displayName) ? '을' : '를';
+                    } else if (template.particle_type === '이/를') {
+                        particle = hasFinalConsonant(displayName) ? '이를' : '를';
+                    }
+                    
+                    htmlContent = htmlContent.replace('{{PET_NAME}}', displayName)
+                                             .replace('{{PARTICLE}}', particle);
+                    
+                    // Step 3: 수정된 HTML을 렌더링 영역에 삽입
+                    renderArea.innerHTML = htmlContent;
 
-                // html2canvas로 이미지 생성
-                const canvas = await html2canvas(renderArea.firstElementChild, {
-                    scale: 1.5, // 이미지 품질 향상
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
+                    // Step 4: 캡처할 대상(body의 첫 자식)을 정확히 지정
+                    const captureTarget = renderArea.querySelector('body > *');
+                    if (!captureTarget) throw new Error('템플릿에서 캡처할 유효한 요소를 찾지 못했습니다.');
+                    
+                    const canvas = await html2canvas(captureTarget, {
+                        scale: 1.5,
+                        useCORS: true,
+                        backgroundColor: '#ffffff'
+                    });
+                    
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL('image/png');
+                    link.download = `${petName}_${template.id}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                } catch (error) {
+                    console.error('이미지 생성 중 오류 발생:', error);
+                    alert(`${template.title} 안내문 생성에 실패했습니다. 파일 경로 등을 확인해주세요.`);
+                }
 
-                // 캔버스 데이터를 사용해 다운로드 링크 생성 및 클릭
-                const link = document.createElement('a');
-                link.href = canvas.toDataURL('image/png');
-                link.download = `${petName}_${template.id}.png`; // 파일 이름 지정 (예: 사랑이_가바펜틴.png)
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                // 브라우저가 여러 파일 다운로드를 처리할 수 있도록 짧은 지연 추가
                 if (i < selectedCheckboxes.length - 1) {
                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
         }
 
-        // 버튼 상태 원상 복구 및 완료 메시지 표시
         setLoading(false);
         statusArea.textContent = '✅ 모든 이미지 다운로드가 완료되었습니다!';
         setTimeout(() => { statusArea.textContent = ''; }, 5000);
     });
 
-    // 버튼 로딩 상태를 관리하는 함수
     function setLoading(isLoading) {
-        if (isLoading) {
-            generateBtn.disabled = true;
-            btnText.style.display = 'none';
-            spinner.style.display = 'block';
-        } else {
-            generateBtn.disabled = false;
-            btnText.style.display = 'block';
-            spinner.style.display = 'none';
-        }
+        generateBtn.disabled = isLoading;
+        btnText.style.display = isLoading ? 'none' : 'block';
+        spinner.style.display = isLoading ? 'block' : 'none';
     }
 
-    // 초기화 함수 실행
     initializeCheckboxes();
 });
