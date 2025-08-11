@@ -4,14 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>금호동물병원 보호자 안내문 통합 대시보드</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- [수정됨] 모든 템플릿에 필요한 스타일과 아이콘 라이브러리를 여기에 미리 로드합니다. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 대시보드 자체 스타일 -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
     <div class="container">
         <header>
-            <!-- ✨ [최종 수정] 로고 이미지 태그를 완전히 삭제했습니다. -->
             <h1>금호동물병원 통합 안내문 대시보드</h1>
             <p>환자 정보를 입력하고 필요한 안내문을 선택하여 이미지를 생성하세요.</p>
         </header>
@@ -22,19 +27,16 @@
                     <label for="petName">환자 이름</label>
                     <input type="text" id="petName" placeholder="아이 이름을 입력하세요 (예: 사랑이)">
                 </div>
-
                 <div class="input-group">
                     <label>안내문 선택</label>
                     <div id="template-checkboxes" class="checkbox-container">
                         <!-- 안내문 목록이 여기에 자동으로 생성됩니다. -->
                     </div>
                 </div>
-
-                <button id="generate-btn" disabled>
+                <button id="generate-btn">
                     <span class="btn-text">선택한 안내문 이미지로 저장</span>
                     <span class="spinner" style="display: none;"></span>
                 </button>
-
                 <div id="status-area"></div>
             </div>
         </main>
@@ -45,10 +47,7 @@
         <div id="render-area"></div>
     </div>
 
-    <!-- 외부 라이브러리 (html2canvas만 필요) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-    <!-- 직접 작성한 스크립트 -->
     <script src="js/templates.js"></script>
     <script src="js/app.js"></script>
 
