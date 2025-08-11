@@ -33,10 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function hasFinalConsonant(name) {
         if (!name || typeof name !== 'string') return false;
         const lastChar = name.charCodeAt(name.length - 1);
-        return (lastChar - 0xAC00) % 28 !== 0;
+        if (lastChar >= 0xAC00 && lastChar <= 0xD7A3) { // 한글 범위 체크
+            return (lastChar - 0xAC00) % 28 !== 0;
+        }
+        return false;
     }
 
-    // 2. 생성 버튼 클릭 이벤트 (파일 로드 및 내용 교체 방식으로 변경)
+    // 2. 생성 버튼 클릭 이벤트
     generateBtn.addEventListener('click', async () => {
         const petName = petNameInput.value.trim();
 
@@ -66,6 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     // Step 1: 템플릿 HTML 파일을 텍스트로 불러오기
                     const response = await fetch(template.path);
+                    if (!response.ok) { // 통신 실패 시 에러 처리
+                        throw new Error(`파일을 불러오지 못했습니다: ${response.statusText}`);
+                    }
                     let htmlContent = await response.text();
 
                     // Step 2: 자리표시자를 실제 이름으로 교체하기
@@ -83,9 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Step 3: 수정된 HTML을 렌더링 영역에 삽입
                     renderArea.innerHTML = htmlContent;
 
-                    // Step 4: 캡처할 대상(body의 첫 자식)을 정확히 지정
-                    const captureTarget = renderArea.querySelector('body > *');
-                    if (!captureTarget) throw new Error('템플릿에서 캡처할 유효한 요소를 찾지 못했습니다.');
+                    // Step 4: 캡처할 대상을 '#captureArea' ID로 명확하게 지정 (⭐핵심 수정 부분⭐)
+                    const captureTarget = renderArea.querySelector('#captureArea'); 
+                    
+                    if (!captureTarget) {
+                        throw new Error('템플릿에서 캡처할 유효한 요소를 찾지 못했습니다. (id="captureArea" 확인 필요)');
+                    }
                     
                     const canvas = await html2canvas(captureTarget, {
                         scale: 1.5,
@@ -102,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                 } catch (error) {
                     console.error('이미지 생성 중 오류 발생:', error);
-                    alert(`${template.title} 안내문 생성에 실패했습니다. 파일 경로 등을 확인해주세요.`);
+                    alert(`${template.title} 안내문 생성에 실패했습니다. 오류: ${error.message}`);
                 }
 
                 if (i < selectedCheckboxes.length - 1) {
