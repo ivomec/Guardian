@@ -3,264 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💖 금호동물병원 보호자 교육용 통합 대시보드 💖</title>
+    <title>금호동물병원 보호자 안내문 통합 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f7f8fc; }
-        .dashboard-container { max-width: 1000px; margin: 2rem auto; padding: 1rem; }
-        .main-controls { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); margin-bottom: 2rem; border: 1px solid #e5e7eb; }
-        .tab-buttons button { padding: 12px 24px; font-weight: 700; font-size: 1.05em; border: none; background-color: transparent; color: #4b5563; border-bottom: 4px solid transparent; transition: all 0.3s ease; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .tab-buttons button.active { color: #6366f1; border-bottom-color: #6366f1; background-color: #f0f1ff; border-top-left-radius: 8px; border-top-right-radius: 8px; }
-        .tab-content .tab-pane { display: none; animation: fadeIn 0.5s; }
-        .tab-content .tab-pane.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .save-button { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); transition: all 0.3s ease; }
-        .save-button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3); }
-        .save-button:disabled { background: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
-        .gradient-text { background: linear-gradient(to right, #4f46e5, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-        .dog-brushing-header { background: linear-gradient(135deg, #00C6FF, #0072FF); }
-        .cat-brushing-header { background: linear-gradient(135deg, #667EEA, #764BA2); }
-        .gabapentin-header { background: linear-gradient(135deg, #a8c0ff, #3f2b96); }
+        body { font-family: 'Noto Sans KR', sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-slate-100 p-4 sm:p-8">
 
-<div class="dashboard-container">
-    <header class="text-center mb-10">
-        <h1 class="text-4xl md:text-5xl font-black text-gray-800 tracking-tight">💖 보호자 교육 통합 대시보드 💖</h1>
-        <p class="text-lg text-gray-500 mt-3">소중한 아이의 건강한 삶, <span class="text-indigo-500 font-semibold">금호동물병원</span>이 함께합니다.</p>
-    </header>
+    <div class="max-w-3xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-800">금호동물병원</h1>
+            <h2 class="text-xl font-semibold text-gray-700 mt-2">보호자 안내문 통합 대시보드</h2>
+        </header>
 
-    <div class="main-controls">
-        <div class="text-center mb-8 p-4 bg-indigo-50 rounded-xl">
-            <h2 class="text-2xl font-bold text-indigo-800">🙌 환영합니다, 보호자님!</h2>
-            <p class="text-indigo-600 mt-2">먼저 아이의 이름과 진료 날짜를 입력해주세요. <br>모든 안내문이 우리 아이에게 꼭 맞게 바뀝니다!</p>
+        <!-- 정보 입력 패널 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8 space-y-4">
+            <div>
+                <label for="petName" class="block text-lg font-bold text-slate-700 mb-2 flex items-center">
+                    <i class="fas fa-paw mr-2 text-indigo-500"></i>환자 이름
+                </label>
+                <input type="text" id="petName" class="w-full p-3 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="아이 이름을 입력하세요.">
+            </div>
+            <div>
+                <label for="currentDate" class="block text-lg font-bold text-slate-700 mb-2 flex items-center">
+                    <i class="fas fa-calendar-alt mr-2 text-indigo-500"></i>기준 날짜 및 시간
+                </label>
+                <div class="flex gap-4">
+                    <input type="date" id="currentDate" class="w-full p-3 border-2 border-slate-300 rounded-lg">
+                    <input type="time" id="currentTime" class="w-full p-3 border-2 border-slate-300 rounded-lg">
+                </div>
+            </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="relative"><label for="mainPetName" class="block text-lg font-bold text-slate-700 mb-2">🐾 환자 이름</label><i class="fa fa-paw absolute left-4 top-12 text-gray-400"></i><input type="text" id="mainPetName" class="w-full p-3 pl-12 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="예: 사랑이"></div>
-            <div class="relative"><label for="mainDate" class="block text-lg font-bold text-slate-700 mb-2">🗓️ 진료 날짜</label><i class="fa fa-calendar-alt absolute left-4 top-12 text-gray-400"></i><input type="date" id="mainDate" class="w-full p-3 pl-12 border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></div>
+
+        <!-- 안내문 선택 패널 -->
+        <div class="mb-8">
+            <h3 class="text-lg font-bold text-slate-700 mb-4 border-b pb-2">
+                <i class="fas fa-file-invoice mr-2 text-indigo-500"></i>이미지로 저장할 안내문을 선택하세요
+            </h3>
+            <div id="template-list" class="space-y-3">
+                <!-- 스크립트가 이 영역을 동적으로 채웁니다 -->
+                <p class="text-slate-500">안내문 목록을 불러오는 중...</p>
+            </div>
         </div>
-        <div class="mt-8 border-t-2 border-dashed pt-8">
-             <h3 class="text-lg font-bold text-slate-700 mb-4 text-center">🖼️ 이미지로 저장할 안내문을 선택해주세요!</h3>
-             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6 p-4 bg-slate-50 rounded-lg">
-                 <label class="flex items-center space-x-2 p-3 rounded-md hover:bg-indigo-100 cursor-pointer transition"><input type="checkbox" data-target="gabapentin-guide" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded save-checkbox"><span class="font-semibold">가바펜틴</span></label>
-                 <label class="flex items-center space-x-2 p-3 rounded-md hover:bg-indigo-100 cursor-pointer transition"><input type="checkbox" data-target="alveolar-bone-guide" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded save-checkbox"><span class="font-semibold">치조골 팽윤</span></label>
-                 <label class="flex items-center space-x-2 p-3 rounded-md hover:bg-indigo-100 cursor-pointer transition"><input type="checkbox" data-target="dog-brushing-guide" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded save-checkbox"><span class="font-semibold">강아지 양치</span></label>
-                 <label class="flex items-center space-x-2 p-3 rounded-md hover:bg-indigo-100 cursor-pointer transition"><input type="checkbox" data-target="norspan-patch-guide" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded save-checkbox"><span class="font-semibold">노스판 패치</span></label>
-                 <label class="flex items-center space-x-2 p-3 rounded-md hover:bg-indigo-100 cursor-pointer transition"><input type="checkbox" data-target="cat-brushing-guide" class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded save-checkbox"><span class="font-semibold">고양이 양치</span></label>
-             </div>
-             <button id="saveSelectedBtn" class="w-full save-button text-white font-bold py-4 px-6 rounded-lg shadow-md flex items-center justify-center text-lg"><i class="fas fa-camera-retro mr-3"></i><span id="saveBtnText">선택한 안내문 이미지로 저장</span></button>
+
+        <!-- 실행 버튼 -->
+        <div class="mt-8">
+            <button id="generateBtn" class="w-full text-white font-bold py-4 px-6 rounded-lg shadow-md flex items-center justify-center text-xl transition-all duration-300 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400">
+                <i class="fas fa-download mr-3"></i>
+                <span id="btn-text">선택한 안내문 이미지로 일괄 저장</span>
+            </button>
         </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-        <div class="tab-buttons border-b border-gray-200 p-2 bg-slate-50 flex-wrap">
-            <button class="tab-button active" data-tab="gabapentin"><i class="fa-solid fa-pills"></i>가바펜틴 진정</button>
-            <button class="tab-button" data-tab="alveolar-bone"><i class="fa-solid fa-tooth"></i>치조골 팽윤</button>
-            <button class="tab-button" data-tab="dog-brushing"><i class="fa-solid fa-dog"></i>강아지 양치</button>
-            <button class="tab-button" data-tab="norspan-patch"><i class="fa-solid fa-bandage"></i>노스판 패치</button>
-            <button class="tab-button" data-tab="cat-brushing"><i class="fa-solid fa-cat"></i>고양이 양치</button>
-        </div>
-        <div class="tab-content p-2 sm:p-4 md:p-6">
-            <div id="gabapentin" class="tab-pane active">
-                <div id="gabapentin-guide" class="bg-white">
-                    <header class="gabapentin-header text-white p-8 md:p-12 text-center rounded-t-2xl"><div class="flex justify-center items-center mb-4"><i class="fa-solid fa-shield-heart text-5xl"></i><h1 class="text-3xl md:text-4xl font-bold ml-4" id="gabapentin-title"><span>우리 아이</span><span>를</span> 위한 편안한 진료 준비 안내서</h1></div><p class="text-lg opacity-90">우리 아이의 스트레스를 줄여 더 안전하고 정확한 진료를 받기 위한 과정입니다. 🥰</p></header>
-                    <div class="p-8 md:p-10"><div class="mb-10"><h2 class="text-2xl font-bold text-gray-800 mb-4">💊 약을 먹고 나면 어떻게 보이나요?</h2><p class="text-gray-600 mb-6">처방해 드린 약은 아이의 불안과 긴장을 완화시켜주는 착한 약이에요. 약효가 나타나면 아래와 같은 모습이 보일 수 있으며, 이는 <strong class="text-indigo-600 font-semibold">아주 정상적인 약효 반응</strong>이니 너무 걱정하지 마세요!</p><div class="grid md:grid-cols-2 gap-6 text-center"><div class="bg-gray-50 p-6 rounded-lg border">😴<h3 class="font-bold text-lg text-gray-700 mt-2">꾸벅꾸벅 졸려요</h3><p class="text-gray-500 text-sm mt-1">몸이 나른해지면서 잠이 많아지거나, 잠에 취한 듯한 모습을 보입니다.</p></div><div class="bg-gray-50 p-6 rounded-lg border">🥴<h3 class="font-bold text-lg text-gray-700 mt-2">몸을 살짝 비틀거려요</h3><p class="text-gray-500 text-sm mt-1">술에 살짝 취한 것처럼 걸음걸이가 불안정해 보일 수 있어요. (운동실조)</p></div><div class="bg-gray-50 p-6 rounded-lg border mt-6">😑<h3 class="font-bold text-lg text-gray-700 mt-2">반응이 둔해져요</h3><p class="text-gray-500 text-sm mt-1">불러도 바로 쳐다보지 않거나, 평소보다 반응 속도가 느려질 수 있습니다.</p></div><div class="bg-gray-50 p-6 rounded-lg border mt-6">👀<h3 class="font-bold text-lg text-gray-700 mt-2">동공이 커져요</h3><p class="text-gray-500 text-sm mt-1">약효로 인해 일시적으로 동공이 확장되어 눈이 까맣고 커 보일 수 있습니다.</p></div></div></div><div class="mb-10"><h2 class="text-2xl font-bold text-gray-800 mb-4">🚗 병원 오는 길, 더 편안하게 만드는 Tip!</h2><ul class="space-y-4"><li class="flex items-start"><div class="flex-shrink-0 w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-lg">1</div><div class="ml-4"><h3 class="font-bold text-lg text-gray-700">이동장과 친구 되기 💖</h3><p class="text-gray-500">병원 갈 때만 이동장을 꺼내면 '이동장=병원'이라는 공포가 생겨요. 평소에 거실에 이동장을 열어두고 안에 간식이나 장난감을 넣어주어 '안전하고 좋은 공간'으로 인식하게 해주세요.</p></div></li><li class="flex items-start"><div class="flex-shrink-0 w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-lg">2</div><div class="ml-4"><h3 class="font-bold text-lg text-gray-700">담요의 마법 🪄</h3><p class="text-gray-500">아이의 체취가 묻은 담요나 보호자님의 옷가지를 이동장 안에 깔아주세요. 익숙한 냄새는 아이에게 큰 안정감을 줍니다. 이동 중에는 이동장 위를 담요로 덮어 시야를 차단해주면 더욱 좋습니다.</p></div></li></ul></div><div><h2 class="text-2xl font-bold text-gray-800 mb-4">🚨 안전을 위한 보호자님 필수 수칙</h2><ul class="space-y-4"><li class="flex items-start"><div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-bold text-lg">1</div><div class="ml-4"><h3 class="font-bold text-lg text-gray-700">안전한 공간에 격리하기</h3><p class="text-gray-500">몸을 잘 가누지 못해 높은 곳(캣타워, 책장, 소파 위 등)에서 떨어질 위험이 있어요. 약 복용 후에는 <strong class="text-red-600">반드시 바닥이 안전한 방이나 화장실, 혹은 넓은 케이지 안</strong>에 있도록 해주세요.</p></div></li><li class="flex items-start"><div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-bold text-lg">2</div><div class="ml-4"><h3 class="font-bold text-lg text-gray-700">투약 및 금식 시간 엄수 ⏰</h3><p class="text-gray-500">정확한 효과와 안전한 진료를 위해 <strong class="text-red-600">안내받으신 투약 시간과 금식 시간</strong>을 반드시 지켜주세요. 특히 내원 2~3시간 전 투약이 가장 중요합니다!</p></div></li></ul></div>
-                        <footer class="p-4 sm:p-6 md:p-8 mt-4 border-t border-slate-200 text-center">
-                            <h3 class="text-xl font-semibold text-slate-800">🤔 궁금하거나 걱정되는 점이 있다면?</h3><p class="text-slate-600 mt-2">사소한 걱정이라도 괜찮으니, 주저 말고 아래 연락처로 문의해 주세요. 저희는 항상 열려있습니다!</p>
-                            <div class="mt-6 bg-slate-50 rounded-lg p-6 inline-block shadow-sm border border-slate-200"><p class="font-bold text-lg text-indigo-700">금호동물병원</p><p class="text-slate-700 mt-2">📞 <a href="tel:062-383-7572" class="hover:underline">062-383-7572</a></p><a href="https://pf.kakao.com/_jiICK/chat" target="_blank" class="mt-4 inline-block w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2.5 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center shadow"><i class="fa-solid fa-comment-dots mr-2"></i>카카오톡 1:1 문의</a></div>
-                        </footer>
-                    </div>
-                </div>
-            </div>
-            <div id="alveolar-bone" class="tab-pane">
-                 <div id="alveolar-bone-guide" class="bg-white p-8 rounded-2xl card-shadow">
-                    <header class="text-center mb-6"><h1 class="text-3xl md:text-4xl font-black gradient-text mb-2">🦷 <span class="pet-name-placeholder">[환자이름]</span>의 송곳니, 무슨 일일까요?</h1><p class="text-lg text-gray-600 font-bold">고양이 송곳니 치조골 팽윤, 보호자님이 알기 쉽게 알려드릴게요! 🧐</p></header>
-                    <main><div class="space-y-8">
-                        <div><h2 class="text-2xl font-bold text-indigo-700 mb-3 border-l-4 border-indigo-500 pl-4">🤔 어? 뼈가 왜 혼자 자라나죠?</h2><p class="text-gray-700 leading-relaxed">'치조골 팽윤'은 아주 쉽게 말해, <span class="font-bold text-pink-500">송곳니의 뿌리를 감싸는 턱뼈(치조골)가 비정상적으로 불룩하게 자라나는 현상</span>이에요. 마치 잇몸에 단단한 혹이 생긴 것처럼 보이죠. 🏗️🧱<br><br>이것은 몸의 세포들이 착각해서 "여기에 뼈가 더 필요해!"라고 잘못된 신호를 보내, 튼튼하라고 뼈를 계속 덧붙이는, 일종의 '과잉 공사'랍니다.</p></div>
-                        <div><h2 class="text-2xl font-bold text-red-700 mb-3 border-l-4 border-red-500 pl-4">😿 <span class="pet-name-placeholder">[환자이름]</span>, 얼마나 아팠을까요?</h2><p class="text-gray-700 leading-relaxed mb-4">겉보기엔 단단한 뼈 같지만, 이 현상은 아이에게 큰 고통을 줍니다.</p><ul class="space-y-3"><li class="flex items-start"><span class="text-2xl mr-3">💥</span><div><strong class="text-gray-800">만성적인 통증:</strong> 자라나는 뼈가 송곳니 뿌리를 계속 압박하고 밀어내요. 마치 손톱 밑에 가시가 박힌 듯한 통증이 계속되는 것과 같아요.</div></li><li class="flex items-start"><span class="text-2xl mr-3">💔</span><div><strong class="text-gray-800">치아 손상:</strong> 뼈의 압박과 염증 때문에 치아 뿌리가 녹아내리는 '치아 흡수'가 함께 진행되는 경우가 많아요. 결국 치아 자체가 망가지게 됩니다.</div></li><li class="flex items-start"><span class="text-2xl mr-3">⚡</span><div><strong class="text-gray-800">턱뼈 골절 위험:</strong> 비정상적으로 자라난 뼈는 매우 약해서, 작은 충격에도 턱뼈가 부러지는 심각한 상황으로 이어질 수 있습니다.</div></li></ul></div>
-                        <div><h2 class="text-2xl font-bold text-green-700 mb-3 border-l-4 border-green-500 pl-4">🩺 최선의 치료는 무엇일까요?</h2><p class="text-gray-700 leading-relaxed">안타깝게도, 약물이나 다른 치료로는 비정상적인 뼈의 성장을 멈출 수 없어요. 😥<br>따라서 이 질병의 근본적인 원인을 제거하고 <span class="pet-name-placeholder">[환자이름]</span><span class="pet-name-josa-eulreul">를</span> 고통에서 완전히 해방시켜주는 <strong class="text-green-600">유일하고 가장 확실한 치료법은 '발치'입니다.</strong><br><br>문제가 되는 송곳니와 주변의 비정상적인 뼈를 함께 제거하여, <span class="pet-name-placeholder">[환자이름]</span><span class="pet-name-josa-iga">가</span> 더 이상 아프지 않고 편안한 삶을 살게 해주는 것이 치료의 핵심 목표랍니다. ❤️</p></div>
-                    </div></main>
-                    <footer class="text-center mt-10 pt-6 border-t-2 border-dashed border-gray-200"><p class="text-gray-800 font-bold">저희 금호동물병원은 <span class="pet-name-placeholder">[환자이름]</span>의 건강하고 행복한 삶을 위해<br>언제나 보호자님과 함께 고민하고 최선을 다하겠습니다. 🏥✨</p></footer>
-                </div>
-            </div>
-            <div id="dog-brushing" class="tab-pane">
-                <div id="dog-brushing-guide" class="max-w-4xl mx-auto bg-white">
-                    <div class="header dog-brushing-header text-white p-10 text-center"><h1 class="text-4xl font-black">૮ ・ﻌ・ა<br>멍생을 좌우하는 건강 습관! <br>강아지 양치 완전 정복</h1><p class="mt-4 text-lg opacity-90">보호자님의 사랑으로 완성되는 매일의 루틴</p></div>
-                    <div class="p-8"><div class="mb-10"><h2 class="text-2xl font-bold text-blue-600 mb-4">✅ 1단계: 준비물 챙기기</h2><div class="bg-blue-50 p-5 rounded-lg border-l-4 border-blue-500"><p>✔️ <strong>강아지 전용 칫솔:</strong> 아이 입 크기에 맞는 부드러운 칫솔 (핑거형, 일반형 등)<br>✔️ <strong>강아지 전용 치약:</strong> 닭고기, 소고기 맛 등 기호성 좋은 제품<br>🚫 <strong>사람 치약 절대 금지!</strong> 불소, 계면활성제는 아이에게 독이 될 수 있어요.</p></div></div><div class="mb-10"><h2 class="text-2xl font-bold text-blue-600 mb-4">✅ 2단계: 양치질과 친해지기 (긍정의 5단계 법칙)</h2><p class="mb-6">인내심은 가장 중요해요! 각 단계마다 최소 3일 이상, 아이가 편안해할 때까지 반복 후 다음으로 넘어가세요. 모든 단계의 끝은 폭풍 칭찬과 보상입니다! 🎉</p><ol class="space-y-4">
-                        <li class="bg-gray-50 p-5 rounded-lg flex items-start"><strong class="bg-blue-500 text-white rounded-full w-8 h-8 text-center leading-8 flex-shrink-0">1</strong><div class="ml-4"><h3 class="font-bold text-lg text-gray-800">입 주변 만지기 연습</h3><p class="text-gray-600">평소 아이가 편안해할 때, 입 주변과 입술을 부드럽게 마사지해주세요. 칭찬과 간식은 필수!</p></div></li>
-                        <li class="bg-gray-50 p-5 rounded-lg flex items-start"><strong class="bg-blue-500 text-white rounded-full w-8 h-8 text-center leading-8 flex-shrink-0">2</strong><div class="ml-4"><h3 class="font-bold text-lg text-gray-800">치약 맛 보여주기</h3><p class="text-gray-600">치약을 '맛있는 간식'으로 인식시켜주세요. 손가락에 짜서 핥아먹게 하며 치약과 친해질 시간을 줍니다.</p></div></li>
-                        <li class="bg-gray-50 p-5 rounded-lg flex items-start"><strong class="bg-blue-500 text-white rounded-full w-8 h-8 text-center leading-8 flex-shrink-0">3</strong><div class="ml-4"><h3 class="font-bold text-lg text-gray-800">손가락으로 치아 문지르기</h3><p class="text-gray-600">치약을 묻힌 손가락으로 송곳니부터 시작해 어금니까지 부드럽게 문질러주세요. 입 안에 손가락이 들어오는 연습입니다.</p></div></li>
-                        <li class="bg-gray-50 p-5 rounded-lg flex items-start"><strong class="bg-blue-500 text-white rounded-full w-8 h-8 text-center leading-8 flex-shrink-0">4</strong><div class="ml-4"><h3 class="font-bold text-lg text-gray-800">칫솔과 인사하기</h3><p class="text-gray-600">칫솔에 치약을 묻혀 핥아먹게 해주세요. 칫솔이 무서운 도구가 아닌, 맛있는 치약이 나오는 장난감처럼 느끼게 해주세요.</p></div></li>
-                        <li class="bg-gray-50 p-5 rounded-lg flex items-start"><strong class="bg-blue-500 text-white rounded-full w-8 h-8 text-center leading-8 flex-shrink-0">5</strong><div class="ml-4"><h3 class="font-bold text-lg text-gray-800">본격! 칫솔질 시작</h3><p class="text-gray-600">송곳니나 옆 어금니부터 시작! 치아와 잇몸 경계에 45도 각도로 대고 부드럽게 원을 그리듯 닦아주세요. 처음엔 10초만 해도 대성공! 목표는 바깥면 각 30초입니다.</p></div></li>
-                    </ol></div><div><h2 class="text-2xl font-bold text-blue-600 mb-4">💡 강아지 양치 Q&A</h2><div class="bg-blue-50 p-5 rounded-lg border-l-4 border-blue-500 space-y-4"><p><strong>Q. 얼마나 자주 해야 하나요?</strong><br><strong>A. 매일이 정답!</strong> 치태는 24~48시간 안에 치석으로 변해요.</p><p><strong>Q. 잇몸에서 피가 나요!</strong><br><strong>A.</strong> 잇몸염증 초기 증상일 수 있어요. 꾸준한 양치로 개선되지만, 2주 이상 지속되면 꼭 병원 검진을 받아주세요.</p><p><strong>Q. 너무 싫어해요!</strong><br><strong>A. 절대 강압은 금물!</strong> 아이가 싫어하면 바로 이전 단계로 돌아가 충분한 시간을 주세요. 긍정적인 기억을 심어주는 것이 가장 중요합니다.</p></div></div></div>
-                    <div class="footer bg-gray-700 text-white text-center p-8 mt-8"><h3 class="font-bold text-xl">치과 특화 금호동물병원</h3><p class="mt-2">궁금한 점은 언제든 편하게 문의해주세요!<br>📞 <strong>062-383-7572</strong></p><a href="https://pf.kakao.com/_jiICK/chat" target="_blank" class="mt-4 inline-block bg-yellow-400 text-black py-3 px-6 rounded-lg font-bold hover:bg-yellow-500 transition">💬 카카오톡 1:1 상담하기</a></div>
-                </div>
-            </div>
-            <div id="norspan-patch" class="tab-pane">
-                 <div id="norspan-patch-guide" class="bg-white">
-                     <div class="p-4 sm:p-6 md:p-8">
-                        <header class="text-center mb-10"><h1 class="text-3xl md:text-4xl font-bold text-blue-800">금호동물병원</h1><h2 id="norspan-patch-title" class="text-xl md:text-2xl font-semibold text-gray-700 mt-3">우리 아이를 위한 통증 관리 패치 안내문</h2></header>
-                        <div class="border-y border-gray-200 py-5 mb-10 space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="flex items-center"><label for="attachDate" class="font-semibold text-gray-600 mr-3 w-24 text-right">부착 날짜:</label><input type="date" id="attachDate" class="flex-grow p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-300 cursor-pointer"></div><div class="flex items-center"><label for="attachTime" class="font-semibold text-gray-600 mr-3 w-24 text-right">부착 시간:</label><input type="time" id="attachTime" class="flex-grow p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-300 cursor-pointer"></div></div><div id="removalInfo" class="mt-4 p-4 bg-yellow-100 border-2 border-yellow-400 rounded-lg text-center transition-all duration-300"><p class="font-bold text-yellow-900">날짜와 시간을 입력하면 제거일이 계산됩니다.</p></div></div>
-                        <p class="text-gray-700 text-base md:text-lg mb-10 text-center leading-relaxed">사랑하는 보호자님, 저희 병원을 믿고 소중한 아이를 맡겨주셔서 감사합니다.<br>우리 아이가 수술 후 통증 없이 편안하게 회복할 수 있도록, **'부프레노르핀'이라는 성분의 진통 패치**를 부착했습니다.<br>아래 내용을 잘 읽어보시고, 아이가 잘 회복할 수 있도록 함께 보살펴 주세요.</p>
-                        <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-md mb-10"><h3 class="text-xl font-bold text-blue-900 mb-2">✅ 이 패치는 어떤 역할을 하나요?</h3><ul class="list-disc list-inside text-gray-700 space-y-1 text-base"><li>약 3~4일 동안 진통제가 서서히 방출되어, 아이가 통증 없이 편안하게 지낼 수 있도록 돕는 **'지속형 진통 패치'**입니다.</li><li>잦은 주사나 약 복용의 스트레스를 줄여주는 장점이 있습니다.</li></ul></div>
-                        <div class="mb-10"><h3 class="text-2xl font-bold text-gray-800 text-center mb-4">👀 우리 아이, 이렇게 관찰해주세요!</h3><p class="text-center text-gray-500 mb-6">아이의 행동 변화는 약효가 잘 나타나고 있다는 긍정적인 신호일 수 있습니다. 너무 걱정하지 마세요!</p><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-green-50 rounded-lg p-5 border border-green-200"><h4 class="text-xl font-bold text-green-800 flex items-center mb-3"><i class="fa-solid fa-circle-check mr-2"></i> 이런 모습은 괜찮아요</h4><ul class="list-disc list-inside space-y-3 text-gray-700"><li><strong>잠이 늘거나 얌전해져요.</strong><br><span class="text-sm text-gray-500">몸이 편안하고 통증이 줄었다는 신호일 수 있습니다.</span></li><li><strong>평소보다 말이 많아지거나, 몸을 많이 비벼요.</strong><br><span class="text-sm text-gray-500">일부 고양이의 정상적인 약물 반응으로 보통 1~2일 내 사라져요.</span></li><li><strong>눈동자가 평소보다 커져 보여요.</strong><br><span class="text-sm text-gray-500">진통제의 일반적인 효과 중 하나입니다.</span></li><li><strong>식욕이 약간 줄어들어요.</strong><br><span class="text-sm text-gray-500">일시적일 수 있으니, 물을 잘 마시는지 확인해주세요.</span></li></ul></div><div class="bg-red-50 rounded-lg p-5 border border-red-200"><h4 class="text-xl font-bold text-red-800 flex items-center mb-3"><i class="fa-solid fa-triangle-exclamation mr-2"></i> 이런 모습은 바로 연락주세요</h4><ul class="list-disc list-inside space-y-3 text-gray-700"><li><strong>숨을 헐떡이거나 힘겹게 쉬어요.</strong><br><span class="text-sm text-gray-500">호흡이 분당 40회 이상으로 지속될 때</span></li><li><strong>몸을 전혀 움직이지 못하고 축 늘어져요.</strong><br><span class="text-sm text-gray-500">이름을 불러도 반응이 거의 없을 때</span></li><li><strong>구토나 설사를 3회 이상 반복해요.</strong><br><span class="text-sm text-gray-500">탈수나 다른 문제의 신호일 수 있습니다.</span></li><li><strong>패치가 떨어졌거나, 아이가 핥거나 씹고 있어요.</strong><br><span class="text-sm text-gray-500">과용량 위험이 있으니 즉시 연락주세요.</span></li></ul></div></div></div>
-                        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-5 rounded-md mb-10"><h3 class="text-xl font-bold text-yellow-900 mb-3">🔥 보호자님, 이것만은 꼭! 지켜주세요</h3><ol class="list-decimal list-inside text-gray-700 space-y-3"><li><strong>가장 중요! 열 주의 🔥</strong><br><strong>전기장판, 핫팩, 온열 램프, 드라이기 등</strong> 패치 부위에 열이 가해지지 않도록 **절대적으로** 주의해주세요. 약물이 과다 흡수되어 위험할 수 있습니다.</li><li><strong>패치 보호</strong><br>아이가 패치를 핥거나, 긁거나, 떼어내지 않도록 지켜봐 주세요. 필요 시 넥카라나 환자복을 착용시켜 주세요.</li><li><strong>안전한 환경</strong><br>다른 반려동물이나 어린이가 패치를 만지거나 핥지 않도록 주의해주세요.</li><li><strong>안전한 폐기</strong><br>패치를 제거할 때는 접착면끼리 마주 보게 반으로 접어, 아이의 손이 닿지 않는 곳에 안전하게 버려주세요.</li></ol></div>
-                        <footer class="p-4 sm:p-6 md:p-8 mt-4 border-t border-slate-200 text-center">
-                            <h3 class="text-xl font-semibold text-slate-800">🤔 궁금하거나 걱정되는 점이 있다면?</h3><p class="text-slate-600 mt-2">사소한 걱정이라도 괜찮으니, 주저 말고 아래 연락처로 문의해 주세요. 저희는 항상 열려있습니다!</p>
-                            <div class="mt-6 bg-slate-50 rounded-lg p-6 inline-block shadow-sm border border-slate-200"><p class="font-bold text-lg text-indigo-700">금호동물병원</p><p class="text-slate-700 mt-2">📞 <a href="tel:062-383-7572" class="hover:underline">062-383-7572</a></p><a href="https://pf.kakao.com/_jiICK/chat" target="_blank" class="mt-4 inline-block w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2.5 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center shadow"><i class="fa-solid fa-comment-dots mr-2"></i>카카오톡 1:1 문의</a></div>
-                        </footer>
-                     </div>
-                 </div>
-            </div>
-            <div id="cat-brushing" class="tab-pane">
-                <div id="cat-brushing-guide" class="max-w-4xl mx-auto bg-white">
-                    <div class="header cat-brushing-header text-white p-10 text-center"><h1 class="text-4xl font-black">ฅ^•ﻌ•^ฅ<br>츤데레 냥님 마음 여는<br>양치 비법 대공개</h1><p class="mt-4 text-lg opacity-90">짧고 굵게! 존중과 인내심으로 시작하는 구강 케어</p></div>
-                    <div class="p-8"><div class="mb-10"><h2 class="text-2xl font-bold text-purple-600 mb-4">✅ 1단계: 만반의 준비</h2><div class="bg-purple-50 p-5 rounded-lg border-l-4 border-purple-500"><p>✔️ <strong>고양이 전용 칫솔:</strong> 초소형 헤드 칫솔, 실리콘 핑거 칫솔, 깨끗한 거즈 등<br>✔️ <strong>고양이 전용 치약:</strong> 향이 강하지 않고 기호성이 좋은 제품<br>🚫 <strong>사람 치약 절대 금지!</strong> 예민한 고양이에겐 더욱 위험해요!</p></div></div><div class="mb-10"><h2 class="text-2xl font-bold text-purple-600 mb-4">✅ 2단계: 양치질을 '일상'으로 스며들게 하기</h2><p class="mb-6">고양이의 인내심은 길지 않아요. 아이가 가장 편안해 할 때, 빛의 속도로 끝내는 것이 핵심입니다. 모든 단계는 칭찬과 간식으로 즐겁게 마무리해주세요! 😻</p><ol class="space-y-4">
-                        <li class="bg-gray-50 p-5 rounded-lg flex items-start"><strong class="bg-purple-500 text-white rounded-full w-8 h-8 text-center leading-8 flex-shrink-0">1</strong><div class="ml-4"><h3 class="font-bold text-lg text-gray-800">얼굴 마사지로 시작</h3><p class="text-gray-600">평소처럼 쓰다듬다가 자연스럽게 볼과 입 주변을 마사지해주세요. 모든 신뢰의 시작입니다.</p></div></li>
-                        <li class="bg-gray-50 p-5 rounded-lg flex items-start"><strong class="bg-purple-500 text-white rounded-full w-8 h-8 text-center leading-8 flex-shrink-0">2</strong><div class="ml-4"><h3 class="font-bold text-lg text-gray-800">치약은 마법의 간식</h3><p class="text-gray-600">치약을 손가락에 묻혀 코나 입가에 살짝 발라주세요. 그루밍하며 맛을 보고 '맛있는 것'으로 인식하게 됩니다.</p></div></li>
-                        <li class="bg-gray-50 p-5 rounded-lg flex items-start"><strong class="bg-purple-500 text-white rounded-full w-8 h-8 text-center leading-8 flex-shrink-0">3</strong><div class="ml-4"><h3 class="font-bold text-lg text-gray-800">치아 '콕' 찍고 빠지기</h3><p class="text-gray-600">치약을 묻힌 손가락이나 면봉으로 송곳니를 '콕' 찍고 바로 빠져나와 칭찬해주세요. 입 안에 무언가 닿는 것에 익숙해지는 과정입니다.</p></div></li>
-                        <li class="bg-gray-50 p-5 rounded-lg flex items-start"><strong class="bg-purple-500 text-white rounded-full w-8 h-8 text-center leading-8 flex-shrink-0">4</strong><div class="ml-4"><h3 class="font-bold text-lg text-gray-800">칫솔과 첫 만남</h3><p class="text-gray-600">칫솔에 치약을 묻혀 핥아먹게만 해주세요. 칫솔을 장난감처럼 가지고 놀게 두는 것도 좋은 방법입니다.</p></div></li>
-                        <li class="bg-gray-50 p-5 rounded-lg flex items-start"><strong class="bg-purple-500 text-white rounded-full w-8 h-8 text-center leading-8 flex-shrink-0">5</strong><div class="ml-4"><h3 class="font-bold text-lg text-gray-800">빛의 속도로 양치하기!</h3><p class="text-gray-600">송곳니 1~2개만 2~3번 슥슥 문지르고 바로 끝! 즉시 최고의 간식으로 보상해주세요. 하루에 1초씩, 치아 1개씩 늘려가는 것이 목표입니다. <strong>바깥쪽 어금니</strong>가 핵심 공략 부위!</p></div></li>
-                    </ol></div><div><h2 class="text-2xl font-bold text-purple-600 mb-4">💡 고양이 양치 Q&A</h2><div class="bg-purple-50 p-5 rounded-lg border-l-4 border-purple-500 space-y-4"><p><strong>Q. 어떻게 잡아야 하나요?</strong><br><strong>A.</strong> 수건으로 몸을 감싸는 '김밥말이'가 도움이 될 수 있지만, 이 자체를 싫어하면 억지로 하지 마세요.</p><p><strong>Q. 매일 해야만 하나요?</strong><br><strong>A. 네, 매일이 원칙!</strong> 특히 고양이는 치과 질환에 취약해 꾸준한 관리가 더욱 중요합니다.</p><p><strong>Q. 아무리 해도 안 될 땐?</strong><br><strong>A.</strong> 칫솔질이 최선이지만, 어렵다면 차선책(먹는 치약, 구강 첨가제, 덴탈 사료/간식)이라도 활용하는 것이 좋습니다. 저희 병원과 상담하여 아이에게 맞는 제품을 선택해주세요.</p></div></div></div>
-                    <div class="footer bg-gray-700 text-white text-center p-8 mt-8"><h3 class="font-bold text-xl">치과 특화 금호동물병원</h3><p class="mt-2">궁금한 점은 언제든 편하게 문의해주세요!<br>📞 <strong>062-383-7572</strong></p><a href="https://pf.kakao.com/_jiICK/chat" target="_blank" class="mt-4 inline-block bg-yellow-400 text-black py-3 px-6 rounded-lg font-bold hover:bg-yellow-500 transition">💬 카카오톡 1:1 상담하기</a></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const mainPetNameInput = document.getElementById('mainPetName');
-    const mainDateInput = document.getElementById('mainDate');
-    mainDateInput.value = new Date().toISOString().split('T')[0];
-
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabPanes = document.querySelectorAll('.tab-pane');
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabId = button.getAttribute('data-tab');
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            tabPanes.forEach(pane => pane.classList.toggle('active', pane.id === tabId));
-        });
-    });
-
-    function hasFinalConsonant(name) {
-        if (!name || typeof name !== 'string') return false;
-        const lastChar = name.charCodeAt(name.length - 1);
-        return (lastChar >= 0xAC00 && lastChar <= 0xD7A3) ? (lastChar - 0xAC00) % 28 !== 0 : false;
-    }
-
-    mainPetNameInput.addEventListener('input', updateAllPetNames);
-    function updateAllPetNames() {
-        const name = mainPetNameInput.value.trim();
-        const displayName = name || '[환자이름]';
-        document.querySelectorAll('.pet-name-placeholder').forEach(el => el.textContent = displayName);
-        const gabapentinTitle = document.getElementById('gabapentin-title');
-        if (name) gabapentinTitle.innerHTML = `<span>${name}</span><span>${hasFinalConsonant(name) ? '을' : '를'}</span> 위한 편안한 진료 준비 안내서`;
-        else gabapentinTitle.innerHTML = `<span>우리 아이</span><span>를</span> 위한 편안한 진료 준비 안내서`;
-        const norspanTitle = document.getElementById('norspan-patch-title');
-        if (norspanTitle) {
-            if (name) norspanTitle.innerText = `${name}${hasFinalConsonant(name) ? '이를' : '를'} 위한 통증 관리 패치 안내문`;
-            else norspanTitle.innerText = `우리 아이를 위한 통증 관리 패치 안내문`;
-        }
-        document.querySelectorAll('.pet-name-josa-eulreul').forEach(el => el.textContent = hasFinalConsonant(name) ? '을' : '를');
-        document.querySelectorAll('.pet-name-josa-iga').forEach(el => el.textContent = hasFinalConsonant(name) ? '이' : '가');
-    }
-    updateAllPetNames();
-
-    const attachDateInput = document.getElementById('attachDate');
-    if (attachDateInput) {
-        const attachTimeInput = document.getElementById('attachTime');
-        const calculateRemovalDate = () => {
-            const dateInput = attachDateInput.value, timeInput = attachTimeInput.value;
-            const removalInfoDiv = document.getElementById('removalInfo');
-            if (!dateInput || !timeInput || !removalInfoDiv) return;
-            const attachDateTime = new Date(`${dateInput}T${timeInput}`);
-            if (isNaN(attachDateTime.getTime())) return;
-            const removalDateStart = new Date(attachDateTime.getTime() + 72 * 3600 * 1000);
-            const removalDateEnd = new Date(attachDateTime.getTime() + 96 * 3600 * 1000);
-            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
-            removalInfoDiv.innerHTML = `<h4 class="text-lg font-bold text-gray-800 mb-2">🗓️ 패치 제거 권장 기간</h4><p class="text-base text-gray-700">보호자님, <strong class="text-blue-600">${new Intl.DateTimeFormat('ko-KR', options).format(removalDateStart)}</strong> 부터<br><strong class="text-blue-600">${new Intl.DateTimeFormat('ko-KR', options).format(removalDateEnd)}</strong> 사이에<br>패치를 안전하게 제거해주세요.</p>`;
-        };
-        attachDateInput.addEventListener('change', calculateRemovalDate);
-        attachTimeInput.addEventListener('change', calculateRemovalDate);
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        attachDateInput.value = now.toISOString().slice(0,10);
-        attachTimeInput.value = now.toISOString().slice(11,16);
-        calculateRemovalDate();
-    }
-
-    const saveSelectedBtn = document.getElementById('saveSelectedBtn');
-    const saveBtnText = document.getElementById('saveBtnText');
-    saveSelectedBtn.addEventListener('click', async function() {
-        const checkboxes = document.querySelectorAll('.save-checkbox:checked');
-        const petName = mainPetNameInput.value.trim() || '환자';
-        if (checkboxes.length === 0) {
-            alert('저장할 안내문을 하나 이상 선택해주세요. ☝️');
-            return;
-        }
-        saveSelectedBtn.disabled = true;
-        saveBtnText.innerText = '📸 멋진 이미지를 만드는 중...';
-
-        for (const checkbox of checkboxes) {
-            const targetId = checkbox.getAttribute('data-target');
-            const elementToCapture = document.getElementById(targetId);
-            if (!elementToCapture) continue;
-
-            let guideName = targetId.replace('-guide', '');
-            
-            // [FIX] Robust gradient handling for html2canvas
-            const originalStyles = [];
-            const elementsWithGradients = elementToCapture.querySelectorAll('.gradient-text, .gabapentin-header, .dog-brushing-header, .cat-brushing-header');
-            
-            elementsWithGradients.forEach(el => {
-                originalStyles.push({ element: el, style: el.style.cssText });
-                if (el.classList.contains('gradient-text')) {
-                    el.style.background = 'none';
-                    el.style.webkitBackgroundClip = 'unset';
-                    el.style.webkitTextFillColor = 'unset';
-                    el.style.color = '#4f46e5';
-                } else {
-                    // For header backgrounds, just set a solid color
-                    if (el.classList.contains('gabapentin-header')) el.style.background = '#7a95e2';
-                    else if (el.classList.contains('dog-brushing-header')) el.style.background = '#0099FF';
-                    else if (el.classList.contains('cat-brushing-header')) el.style.background = '#6E62B8';
-                }
-            });
-
-            try {
-                const canvas = await html2canvas(elementToCapture, {
-                    scale: 2, useCORS: true, backgroundColor: '#ffffff',
-                    windowWidth: elementToCapture.scrollWidth, windowHeight: elementToCapture.scrollHeight,
-                });
-                const link = document.createElement('a');
-                link.href = canvas.toDataURL('image/png');
-                link.download = `${petName}_${guideName}_${mainDateInput.value}.png`;
-                link.click();
-            } catch (err) {
-                console.error(`이미지 저장 중 오류 발생 (${guideName}):`, err);
-                alert(`죄송합니다. '${guideName}' 이미지 저장에 실패했어요. 😥 \n개발자 콘솔을 확인해주세요.`);
-            } finally {
-                // Restore original styles
-                originalStyles.forEach(item => {
-                    item.element.style.cssText = item.style;
-                });
-            }
-        }
-        
-        saveSelectedBtn.disabled = false;
-        saveBtnText.innerText = '선택한 안내문 이미지로 저장';
-    });
-});
-</script>
+    <!-- 기능 로직을 담당하는 외부 스크립트 파일 로드 -->
+    <script src="./scripts/dashboard.js"></script>
 
 </body>
 </html>
